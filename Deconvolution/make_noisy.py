@@ -11,7 +11,7 @@ def makeNoisy(model_map_name):
         f[0].data = numpy.random.poisson(f[0].data)
 
 names = []
-s = '/media/masha/Maxtor/database/'
+s = 'database/'
 for i in os.listdir(s):
     print(i)
     if (i[-15:] == "_model_map.fits"):
