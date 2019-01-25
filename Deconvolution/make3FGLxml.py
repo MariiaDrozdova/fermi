@@ -71,7 +71,7 @@ class srcList:
 		else:
 			addSrcsFITS(self,GDfile,GDname,ISOfile,ISOname,oldNames)
 	
-import pyfits
+from astropy.io import fits as pyfits
 import os
 from xml.dom import minidom
 from xml.dom.minidom import parseString as pS

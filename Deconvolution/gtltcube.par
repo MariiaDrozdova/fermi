@@ -1,11 +1,11 @@
 # @file gtltcube.par
 # $Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/Likelihood/pfiles/gtltcube.par,v 1.7 2011/04/19 17:09:27 jchiang Exp $
 #
-evfile,s,a,"others/sky200_coord_ra17.9094478592_dec47.549386477_events.fits",,,"Event data file"
+evfile,s,a,"/media/mariia/Maxtor/others/sky209_coord_ra164.363201088_dec-45.1881671011_test7_events.fits",,,"Event data file"
 evtable,s,h,"EVENTS",,,"Event data extension"
 scfile,f,a,"lat_data/L181005111217F4F0ED2779_SC00.fits",,,"Spacecraft data file"
 sctable,s,h,"SC_DATA",,,"Spacecraft data extension"
-outfile,f,a,"others/sky200_coord_ra17.9094478592_dec47.549386477_expCube.fits",,,"Output file"
+outfile,f,a,"/media/mariia/Maxtor/others/sky209_coord_ra164.363201088_dec-45.1881671011_test7_expCube.fits",,,"Output file"
 dcostheta,r,a,0.025,0.,1.,"Step size in cos(theta)"
 binsz,r,a,1,,,"Pixel size (degrees)"
 phibins,i,h,0,,,"Number of phi bins"

@@ -9,14 +9,15 @@ from make3FGLxml import *
 import re,os,sys
 import glob
 
-def simulateMaps(ra=193.98, dec=-5.82, side=10, sim=1, xml=1):
+def simulateMaps(ra=193.98, dec=-5.82, side=10, sim=1, xml=1, flag = ''):
 	#parameters to build map ; please change these for a new region on the sky
 	#ra = 193.98 #coordinates of the source in J2000
 	#dec = -5.82
 	side = 10. #side of map , deg
 	pixsize = 0.05 #deg size of the pixel
 
-	prefix = 'sky' + str(sim) + '_coord_ra' + str(ra)+'_dec' + str(dec) # all output files will start from prefix_
+	prefix = 'sky' + str(sim) + '_coord_ra' + str(ra)+'_dec' + str(dec) + flag # all output files will start from prefix_
+	prefold  = "/media/mariia/Maxtor/"
 
 
 	emin = 1000 #minimal energy ; MeV
@@ -24,7 +25,7 @@ def simulateMaps(ra=193.98, dec=-5.82, side=10, sim=1, xml=1):
 
 
 
-	### pleasem specify where fermi data is located
+	### pleasem specify where fermi data is located/media/masha/Maxtor/
 	data_path = 'lat_data/'#'/home/tu/tu_tu/tu_pside01/FERMI/Data/Variable/All/' #path to Fermi/LAT data
 	catalogue = 'bright100mevsort.fit' # fermi catlogue file to use ;
 
@@ -38,25 +39,25 @@ def simulateMaps(ra=193.98, dec=-5.82, side=10, sim=1, xml=1):
 
 	irfs='P8R2_CLEAN_V6'
 	zmax = 90
-
+	database = 'database5/'
 
 	#some file names which will be used through the code
-	gti = 'others/' + prefix + '_events.fits' # event-file name
-	sky_map = 'database/' +prefix+'_real_map.fits' # sky map
-	expcube = 'others/' + prefix+'_expCube.fits'
-	bexpmap = 'others/' + prefix+'_BexpMap.fits'
-	ccubemap = 'others/' + prefix+'_ccube3D.fits'
-	srcmap = 'others/' + prefix+'_SrcMap.fits'
-	srcmdl = 'database/' + prefix+'_src_model_const.xml' # xml version of the  model map
-	model_map = 'database/' + prefix+'_model_map.fits' # model map
-	deconv_map ='database/' + prefix + '_deconvolved_map.fits' # "ideal deconvolution" map
+	gti = prefold + 'others/' + prefix + '_events.fits' # event-file name
+	sky_map = prefold + database +prefix+'_real_map.fits' # sky map
+	expcube = prefold + 'others/' + prefix+'_expCube.fits'
+	bexpmap = prefold + 'others/' + prefix+'_BexpMap.fits'
+	ccubemap = prefold + 'others/' + prefix+'_ccube3D.fits'
+	srcmap = prefold + 'others/' + prefix+'_SrcMap.fits'
+	srcmdl = prefold + database + prefix+'_src_model_const.xml' # xml version of the  model map
+	model_map = prefold + database+ prefix+'_model_map.fits' # model map
+	deconv_map = prefold + database + prefix + '_deconvolved_map.fits' # "ideal deconvolution" map
 	if (xml):
-		srcmdl = 'database/' + prefix+'_real_src_model_const.xml' # xml version of the  model map
-		model_map = 'database/' + prefix+'_real_model_map.fits' # model map
-		deconv_map ='database/' + prefix + '_real_deconvolved_map.fits' # "ideal deconvolution" map
+		srcmdl = prefold + database + prefix+'_real_src_model_const.xml' # xml version of the  model map
+		model_map = prefold + database+ prefix+'_real_model_map.fits' # model map
+		deconv_map =prefold + database + prefix + '_real_deconvolved_map.fits' # "ideal deconvolution" map
 
-	tmp_gti = 'others/' + prefix+'_events.tmp' #temp event-file name
-	tmp_evlist = 'others/' + prefix+'_evlist.tmp' #temp
+	tmp_gti = prefold + 'others/' + prefix+'_events.tmp' #temp event-file name
+	tmp_evlist = prefold + 'others/' + prefix+'_evlist.tmp' #temp
 
 
 
@@ -104,7 +105,9 @@ def simulateMaps(ra=193.98, dec=-5.82, side=10, sim=1, xml=1):
 
 
 	#selecting events
-	if( not os.path.exists(gti) ): #if we do not have gti filtered file -> create it
+	print(gti)
+	#if( not os.path.exists(gti) ): #if we do not have gti filtered file -> create it
+        if True:
 		numpy.savetxt( tmp_evlist ,   event_files, fmt='%s' )
 		#gtselect
 		print('GTSELECT started!')
@@ -146,7 +149,8 @@ def simulateMaps(ra=193.98, dec=-5.82, side=10, sim=1, xml=1):
 		print(gti+' file exist!')
 
 	# building a sky map
-	if( not os.path.exists(sky_map) ):
+	#if( not os.path.exists(sky_map) ):
+        if True:
 		print('Building sky map')
 		gt.evtbin['evfile'] = gti
 		gt.evtbin['scfile'] = scfile
@@ -167,8 +171,9 @@ def simulateMaps(ra=193.98, dec=-5.82, side=10, sim=1, xml=1):
 
 	#creating xml model of the region
 	if( not os.path.exists( srcmdl ) ):
-		mymodel = srcList(catalogue, gti , srcmdl)
+		mymodel = srcList(catalogue, gti , srcmdl)#
 		try:
+			print("ph")
 			os.system( 'ln -s ${FERMI_DIR}/refdata/fermi/galdiffuse/gll_iem_v06.fits glprp.fits' )
 			os.system( 'ln -s ${FERMI_DIR}/refdata/fermi/galdiffuse/iso_'+irfs+'_v06.txt .' ) #e.g. P8R2_CLEAN_V6
 		except:
@@ -179,7 +184,8 @@ def simulateMaps(ra=193.98, dec=-5.82, side=10, sim=1, xml=1):
 	else:
 		print('XML sky model '+ srcmdl+' exists!')
 
-	if(not os.path.exists(ccubemap)):
+	#if(not os.path.exists(ccubemap)):
+	if True:
 		print('Creating CCube MAP')
 		gt.evtbin['evfile'] = gti
 		gt.evtbin['scfile'] = scfile
@@ -204,7 +210,8 @@ def simulateMaps(ra=193.98, dec=-5.82, side=10, sim=1, xml=1):
 
 
 	#Exposure cube create
-	if(not os.path.exists(expcube)):
+	#if(not os.path.exists(expcube)):
+	if True:
 		print('Building Exposure cube ' + expcube +' ; this can take a while...')
 		gt.expCube['evfile'] = gti
 		gt.expCube['scfile'] = scfile
@@ -218,7 +225,8 @@ def simulateMaps(ra=193.98, dec=-5.82, side=10, sim=1, xml=1):
 
 
 
-	if(not os.path.exists(bexpmap)):
+	#if(not os.path.exists(bexpmap)):
+	if True:
 		print('Building binned exposure '+ bexpmap)
 		gtexp = gt.GtApp('gtexpcube2')
 		gtexp['infile']	= expcube
@@ -246,7 +254,8 @@ def simulateMaps(ra=193.98, dec=-5.82, side=10, sim=1, xml=1):
 
 
 	#Exposure map create
-	if (not os.path.exists(srcmap)):
+	#if (not os.path.exists(srcmap)):
+	if True:
 		print('Calcualting Diffuse responses')
 		gt.srcMaps['scfile'] =scfile
 		gt.srcMaps['expcube'] =expcube
@@ -266,7 +275,8 @@ def simulateMaps(ra=193.98, dec=-5.82, side=10, sim=1, xml=1):
 
 
 
-	if( not os.path.exists(model_map) ):
+	#if( not os.path.exists(model_map) ):
+	if True:
 		print('Building model map...')
 		gtmdl = gt.GtApp('gtmodel')
 		gtmdl['srcmaps'] = srcmap
@@ -287,7 +297,8 @@ def simulateMaps(ra=193.98, dec=-5.82, side=10, sim=1, xml=1):
 	else: print('Model map exists:'+model_map)
 
 
-	if( not os.path.exists( deconv_map ) ):
+	#if( not os.path.exists( deconv_map ) ):
+	if True:
 		print('Building deconvoluted map...')
 		gtmdl1 = gt.GtApp('gtmodel')
 		gtmdl1['srcmaps'] = srcmap

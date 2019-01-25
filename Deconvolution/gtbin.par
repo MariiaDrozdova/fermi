@@ -1,8 +1,8 @@
 #-------------------------------------------------------------------------------
 # General parameters.
-evfile,        f, a, "others/sky200_coord_ra17.9094478592_dec47.549386477_events.fits", , , "Event data file name"
+evfile,        f, a, "/media/mariia/Maxtor/others/sky209_coord_ra164.363201088_dec-45.1881671011_test7_events.fits", , , "Event data file name"
 scfile,        f, a, "lat_data/L181005111217F4F0ED2779_SC00.fits", , , "Spacecraft data file name"
-outfile,       f, a, "others/sky200_coord_ra17.9094478592_dec47.549386477_ccube3D.fits", , , "Output file name"
+outfile,       f, a, "/media/mariia/Maxtor/others/sky209_coord_ra164.363201088_dec-45.1881671011_test7_ccube3D.fits", , , "Output file name"
 algorithm,     s, a, "CCUBE", CCUBE|CMAP|LC|PHA1|PHA2|HEALPIX, , "Type of output file"
 #-------------------------------------------------------------------------------
 
@@ -34,8 +34,8 @@ nxpix,         i, a, 200, , , "Size of the X axis in pixels"
 nypix,         i, a, 200, , , "Size of the Y axis in pixels"
 binsz,         r, a, 0.05, , , "Image scale (in degrees/pixel)"
 coordsys,      s, a, "CEL", CEL|GAL, ,"Coordinate system (CEL - celestial, GAL -galactic)"
-xref,          r, a, 17.9094478592, , , "First coordinate of image center in degrees (RA or galactic l)"
-yref,          r, a, 47.549386477, , , "Second coordinate of image center in degrees (DEC or galactic b)"
+xref,          r, a, 164.363201088, , , "First coordinate of image center in degrees (RA or galactic l)"
+yref,          r, a, -45.1881671011, , , "Second coordinate of image center in degrees (DEC or galactic b)"
 axisrot,       r, a, 0, , , "Rotation angle of image axis, in degrees"
 rafield,       s, h, "RA", , ,"First coordinate field to bin"
 decfield,      s, h, "DEC", , ,"Second coordinate field to bin"

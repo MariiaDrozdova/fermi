@@ -18,9 +18,13 @@ def makeNoisy(model_map_name):
         print(f[0].data)
 
 def simulateObjects(sim=1):
-    ra =random.random() * 360
+    ra = random.random() * 360
     dec = random.random() * 180 - 90
+    #ra = random.random() * 360
+    #dec = random.random() * 180 - 90
     real_xml = simulateMaps(ra=ra, dec=dec, sim=sim, xml=1)
+    diffuse_f = False
+    diff_res = ""
     if (real_xml):
         k = 0
         f_real = open(real_xml)
@@ -37,7 +41,7 @@ def simulateObjects(sim=1):
             if (i.find('max="1e4" min="1e-4" name="Prefactor"') >= 0.0):
                 value_str = i.split(" ")[-1]
                 first = value_str.find('"')+1
-                second = first + 15#value_str.rfind('"')+1
+                second = first + 10#value_str.rfind('"')+1
                 value = float(value_str[first:second])                
                 value_scale = i.split(" ")[-2]
                 value_s = float(value_scale[value_scale.find('"')+1 : value_scale.rfind('"')])
@@ -62,11 +66,24 @@ def simulateObjects(sim=1):
 
                 if max_index < value_scale:
                     max_index = value_scale
+            if (i.find('<!-- Diffuse Sources -->') >= 0.0):
+                diffuse_f = True
+            if (diffuse_f):
+                diff_res += i
+         		
     print(min_v)
     print(max_v)
     #print(k)
     i_range = random.randint(a=-2, b=2)
     res = '''<?xml version="1.0" ?>
+        <source_library title="source library">
+
+        <!-- Point Sources -->
+
+        <!-- Sources between [0.0,3.4142135624) degrees of ROI center -->
+        '''
+
+    res0 = '''<?xml version="1.0" ?>
         <source_library title="source library">
 
         <!-- Point Sources -->
@@ -81,7 +98,7 @@ def simulateObjects(sim=1):
         val1 = np.exp(5.0*np.log(r2))*(max_v*1.15-min_v*0.1) + min_v*0.1
         val2 = random.random() * (max_index-0) + 0
         val3 = np.exp(5.0*np.log(r)) * (max_scale*1.15-30) + 30
-        val4 = random.random() * (9.98-0)-4.99 + ra
+        val4 = random.random() * (9.98-0)*2-4.99*2 + ra
         if val4>360:
             val4 = val4-360
         if val4<0:
@@ -111,8 +128,12 @@ def simulateObjects(sim=1):
                 <parameter free="0" max="360.0" min="-360.0" name="RA" scale="1.0" value="'''+str(val4)+'''"/>
                 <parameter free="0" max="90" min="-90" name="DEC" scale="1.0" value="'''+str(val5)+'''"/>
             </spatialModel>
-        </source>\n'''
-        res = res + s
+        </source>
+        '''
+        
+        res = res + s 
+    res = res +'''\n<!-- Diffuse Sources -->
+    </source_library>\n'''
     end = '''
     <!-- Diffuse Sources -->
         <source name="gll_iem_v06" type="DiffuseSource">
@@ -133,16 +154,23 @@ def simulateObjects(sim=1):
                 <parameter free="0" max="10.0" min="0.0" name="Value" scale="1.0" value="1.0"/>
             </spatialModel>
         </source>
-        </source_library>
-        '''
-    res = res + end
-    xml_name = 'database/sky' + str(sim) + '_coord_ra' + str(ra)+'_dec' + str(dec) + '_src_model_const.xml'
+    </source_library>'''
+    res = res
+    xml_name = '/media/masha/Maxtor/database3/sky' + str(sim) + '_coord_ra' + str(ra)+'_dec' + str(dec) + '_points_src_model_const.xml'
     f = open(xml_name, 'w')
     f.write(res)
     f.close()
-    simulateMaps(ra=ra, dec=dec, sim=sim, xml=0)
-    makeNoisy('database/sky' + str(sim) + '_coord_ra' + str(ra)+'_dec' + str(dec) + '_model_map.fits')
+    simulateMaps(ra=ra, dec=dec, sim=sim, xml=0, flag='_points')
+    makeNoisy('/media/masha/Maxtor/database3/sky' + str(sim) + '_coord_ra' + str(ra)+'_dec' + str(dec) + '_points_model_map.fits')
+    res = res0 + diff_res
+    xml_name = '/media/masha/Maxtor/database3/sky' + str(sim) + '_coord_ra' + str(ra)+'_dec' + str(dec) + '_back_src_model_const.xml'
+    f = open(xml_name, 'w')
+    f.write(res)
+    f.close()
+    simulateMaps(ra=ra, dec=dec, sim=sim, xml=0, flag='_back')
+    makeNoisy('/media/masha/Maxtor/database3/sky' + str(sim) + '_coord_ra' + str(ra)+'_dec' + str(dec) + '_back_model_map.fits')
 
-for i in range(200, 1000):
+for i in range(228, 300):
+
 	print(i)
 	simulateObjects(i)
