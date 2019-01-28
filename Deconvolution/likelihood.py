@@ -116,7 +116,7 @@ class XML():
                 <spectrum apply_edisp="false" type="PowerLaw">
                 <!-- Source is 8.582976793871993 degrees away from ROI center -->
                 <!-- Source is outside ROI, all parameters should remain fixed -->
-                    <parameter free="0" max="1e4" min="1e-4" name="Prefactor" scale="1e-10" value="2.0"/>
+                    <parameter free="0" max="1e4" min="1e-4" name="Prefactor" scale="1e-10" value="10.0"/>
                     <parameter free="0" max="10.0" min="0.0" name="Index" scale="-1.0" value="1.0"/>
                     <parameter free="0" max="5e5" min="30" name="Scale" scale="1.0" value="590.3473105381578"/>
                 </spectrum>
@@ -275,11 +275,11 @@ def run_prog(d_name):
     fname_back = d_name["fname_back"]
     fname_xml = d_name["fname_xml"]
 
-    x = XML(fname_xml, get_center(d_name["fname_points"]))
+    #x = XML(fname_xml, get_center(d_name["fname_points"]))
 
-    x.generate_diffuse()
-    diff_back = x.run_back()
-    model = diff_back
+    #x.generate_diffuse()
+    diff_back = openAsImage(fname_back) #x.run_back()
+    #model = diff_back
     a = d["a"]
     b = d["b"]
 
@@ -294,8 +294,8 @@ def run_prog(d_name):
     koefs = []
     chosen_fits = []
     koef = 1
-    for k in range(0,1000):
-            model = diff_back * k
+    for k in range(0,50):
+            model = diff_back * k*0.1
             new_likelihood = likelihood(model, observations)
 
             if max_likelihood > new_likelihood:
@@ -304,10 +304,10 @@ def run_prog(d_name):
                 print(koef)
                 print(new_likelihood)
     d["chosen_fits"].append(diff_back)
-    d["koefs"].append(koef)
+    d["koefs"].append(koef*0.1)
     d["fin_fits"] = koef *diff_back
-    x.generate_diffuse_k(koef)
-    int_cr = 8
+    #x.generate_diffuse_k(koef)
+    int_cr =d["int_cr"]
     new_likelihood = 0
     likelihood0 = np.inf + 5
     star = 0     
@@ -331,16 +331,22 @@ def run_prog(d_name):
         ra, dec = w.all_pix2world([index[1]+1], [index[0]+1], 1)
         print(ra)
         print(dec)
-        x.add_point_source(ra[0], dec[0])
+        test1 = np.loadtxt("test1.fits")
+        test=np.zeros((600,600))
+        x = index[0]
+        y = index[1]
+        test[x:x+400, y:y+400] = test1
+        point_model = test[200:400, 200:400]
+        #x.add_point_source(ra[0], dec[0])
         
         
         d['indexes'].append(index)
-        point_model = x.run_point(star)
+        #point_model = x.run_point(star)
         #plt.imshow(point_model)
         #plt.show()
         if ((observations[index[0], index[1]] - d["fin_fits"][index[0], index[1]]) < 0):
             break
-        bnds.append((0, 1+(observations[index[0], index[1]] - d["fin_fits"][index[0], index[1]])/point_model[index[0], index[1]]*1000))
+        bnds.append((1e-20, 1+(observations[index[0], index[1]] - d["fin_fits"][index[0], index[1]])/point_model[index[0], index[1]]*1000))
         params_k = list(d["koefs"])
         d["chosen_fits"].append(point_model)
         params_k.append(1.2*np.abs(observations[index[0], index[1]] - d["fin_fits"][index[0], index[1]])/point_model[index[0], index[1]])#options={'maxinter':10000,'xtol':1e-8, 'disp':True, 'stepmx':1.0}, )#'SLSQP',options={'disp':True, 'maxiter':10000000, 'eps':1e-8, 'ftol':1e-8})
@@ -463,6 +469,8 @@ def extract_names(string_points, string_back, a, b):
     d["original_coords"] = [[y[i], x[i]] for i in range(len(x))]
     d["original_brightness"] = koefs
     d["file_to_write"] =  "combination_" + str(a)+"_"+ d["sky_number_points"] +"_" +str(b)+"_"+ d["sky_number"]
+    d["f"] = "likelihood**2"
+    d["int_cr"] = 4
     #x, y, koefs = 
     #observations = (makeNoisy(obs))
     return d
@@ -478,10 +486,16 @@ for i in files:
     if i.find("back_model_map") != -1 and i.find("noisy") == -1 :
         back_models.append("/media/mariia/Maxtor/database5/" + i)
 
-for i in range(100):
+#f = open("test2.fits", "w")
+#f.write(point_model)
+#f.close()
+
+
+for i in range(50):
     a, b = generate_linear_koefs()
     string_points = random.choice(points_models)
     string_back =random.choice(back_models)
     d = extract_names(string_points, string_back, a, b)
     run_prog(d)
+#"""
 
