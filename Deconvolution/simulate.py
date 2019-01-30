@@ -5,9 +5,13 @@ import math
 from astropy.io import fits
 import numpy as np
 import matplotlib.pyplot as plt
-
+import multiprocessing
 from ds9_cmap import *
 from make_fermi_maps import *
+
+_fname_prefold = '/media/mariia/Maxtor/'
+_fname_data = 'database5/'
+_fname_database = _fname_prefold + _fname_data
 
 def makeNoisy(model_map_name):
     os.system('cp '+model_map_name+' '+model_map_name+'.noisy')
@@ -19,10 +23,10 @@ def makeNoisy(model_map_name):
 
 def simulateObjects(sim=1):
     ra = random.random() * 360
-    dec = random.random() * 180 - 90
+    dec = random.random() * 180-90
     #ra = random.random() * 360
     #dec = random.random() * 180 - 90
-    real_xml = simulateMaps(ra=ra, dec=dec, sim=sim, xml=1)
+    real_xml = simulateMaps(ra=ra, dec=dec, database=_fname_data, prefold=_fname_prefold, sim=sim, xml=1)
     diffuse_f = False
     diff_res = ""
     if (real_xml):
@@ -156,21 +160,21 @@ def simulateObjects(sim=1):
         </source>
     </source_library>'''
     res = res
-    xml_name = '/media/masha/Maxtor/database3/sky' + str(sim) + '_coord_ra' + str(ra)+'_dec' + str(dec) + '_points_src_model_const.xml'
+    xml_name = _fname_database + 'sky' + str(sim) + '_coord_ra' + str(ra)+'_dec' + str(dec) + '_points_src_model_const.xml'
     f = open(xml_name, 'w')
     f.write(res)
     f.close()
-    simulateMaps(ra=ra, dec=dec, sim=sim, xml=0, flag='_points')
-    makeNoisy('/media/masha/Maxtor/database3/sky' + str(sim) + '_coord_ra' + str(ra)+'_dec' + str(dec) + '_points_model_map.fits')
+    simulateMaps(ra=ra, dec=dec, database=_fname_data, prefold=_fname_prefold, sim=sim, xml=0, flag='_points')
+    makeNoisy(_fname_database + 'sky' + str(sim) + '_coord_ra' + str(ra)+'_dec' + str(dec) + '_points_model_map.fits')
     res = res0 + diff_res
-    xml_name = '/media/masha/Maxtor/database3/sky' + str(sim) + '_coord_ra' + str(ra)+'_dec' + str(dec) + '_back_src_model_const.xml'
+    xml_name = _fname_database + 'sky' + str(sim) + '_coord_ra' + str(ra)+'_dec' + str(dec) + '_back_src_model_const.xml'
     f = open(xml_name, 'w')
     f.write(res)
     f.close()
-    simulateMaps(ra=ra, dec=dec, sim=sim, xml=0, flag='_back')
-    makeNoisy('/media/masha/Maxtor/database3/sky' + str(sim) + '_coord_ra' + str(ra)+'_dec' + str(dec) + '_back_model_map.fits')
+    simulateMaps(ra=ra, dec=dec, database=_fname_data, prefold=_fname_prefold, sim=sim, xml=0, flag='_back')
+    makeNoisy(_fname_database + 'sky' + str(sim) + '_coord_ra' + str(ra)+'_dec' + str(dec) + '_back_model_map.fits')
 
-for i in range(228, 300):
 
-	print(i)
-	simulateObjects(i)
+pool = multiprocessing.Pool(8)
+offset=1
+zip(*pool.map(simulateObjects, range(400, 400 + 2 * offset, offset)))

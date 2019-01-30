@@ -9,7 +9,7 @@ from make3FGLxml import *
 import re,os,sys
 import glob
 
-def simulateMaps(ra=193.98, dec=-5.82, side=10, sim=1, xml=1, flag = ''):
+def simulateMaps(ra=193.98, dec=-5.82, database='database2/', prefold="/media/mariia/Maxtor/",side=10, sim=1, xml=0, flag = ''):
 	#parameters to build map ; please change these for a new region on the sky
 	#ra = 193.98 #coordinates of the source in J2000
 	#dec = -5.82
@@ -17,8 +17,6 @@ def simulateMaps(ra=193.98, dec=-5.82, side=10, sim=1, xml=1, flag = ''):
 	pixsize = 0.05 #deg size of the pixel
 
 	prefix = 'sky' + str(sim) + '_coord_ra' + str(ra)+'_dec' + str(dec) + flag # all output files will start from prefix_
-	prefold  = "/media/mariia/Maxtor/"
-
 
 	emin = 1000 #minimal energy ; MeV
 	emax = 10000 #maximal energy ; MeV
@@ -39,7 +37,7 @@ def simulateMaps(ra=193.98, dec=-5.82, side=10, sim=1, xml=1, flag = ''):
 
 	irfs='P8R2_CLEAN_V6'
 	zmax = 90
-	database = 'database5/'
+	
 
 	#some file names which will be used through the code
 	gti = prefold + 'others/' + prefix + '_events.fits' # event-file name

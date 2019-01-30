@@ -18,6 +18,10 @@ from make_fermi_maps import *
 
 import scipy.optimize as optimize
 
+_fname_prefold = '/media/mariia/Maxtor/'
+_fname_data = 'database2/'
+_fname_database = _fname_prefold + _fname_data
+
 def f(params, params2):#, observ, models):
     observ, models = params2
 
@@ -44,7 +48,7 @@ def openAsImage(fname):
 
 class XML():
     def __init__(self, name, center):
-        self.string = ""
+
         self.name = name
         self.center = center
         self.start = """<?xml version="1.0" ?>
@@ -163,7 +167,7 @@ class XML():
         f.write(res)
         f.close()   
         name = self.name
-        simulateMaps(ra=self.center[0], dec=self.center[1], sim=self.sim, xml=0, flag='_test')
+        simulateMaps(ra=self.center[0], dec=self.center[1], database=_fname_data, prefold=_fname_prefold, sim=self.sim, flag='_test')
         model_name = name[:name.find("_src_model_const.xml")]+"_model_map.fits"
         new_model = model_name
         print(new_model)
@@ -181,7 +185,7 @@ class XML():
         f.write(res)
         f.close()   
         name = self.name
-        simulateMaps(ra=self.center[0], dec=self.center[1], sim=self.sim, xml=0, flag='_test' + str(i))
+        simulateMaps(ra=self.center[0], dec=self.center[1], database=_fname_data, prefold=_fname_prefold, sim=self.sim, xml=0, flag='_test' + str(i))
         model_name = name[:name.find("_src_model_const.xml")]+ str(i)+"_model_map.fits"
         new_model = ""+model_name
         res = openAsImage(model_name)
@@ -247,11 +251,11 @@ def get_center(string):
     return center
 
 def save_obj(obj, name ):
-    with open('/media/mariia/Maxtor/database5/results/'+ name + '.pkl', 'wb') as f:
+    with open('/media/mariia/Maxtor/database5/results_test/'+ name + '.pkl', 'wb') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 def load_obj(name ):
-    with open('/media/mariia/Maxtor/database5/results/' + name + '.pkl', 'rb') as f:
+    with open('/media/mariia/Maxtor/database5/results_test/' + name + '.pkl', 'rb') as f:
         return pickle.load(f)
 
 def extract_names(string):
@@ -266,7 +270,7 @@ def extract_names(string):
     d.update({"final_fits" : d["final_fits_folder"] + d["sky_number"] + ".fits"})
     return d
 
-def run_prog(d_name):
+def run_prog(d_name, test=False):
 
     final_fits_folder = d_name["final_fits_folder"]
     final_fits = d_name["final_fits"]
@@ -274,19 +278,15 @@ def run_prog(d_name):
     fname_points = d_name["fname_points"]
     fname_back = d_name["fname_back"]
     fname_xml = d_name["fname_xml"]
-
-    #x = XML(fname_xml, get_center(d_name["fname_points"]))
-
-    #x.generate_diffuse()
-    diff_back = openAsImage(fname_back) #x.run_back()
-    #model = diff_back
-    a = d["a"]
-    b = d["b"]
-
-    obs = d["original"]
+    d = d_name
+    if test:
+        x = XML(fname_xml, get_center(d_name["fname_points"]))
+        x.generate_diffuse()
+        diff_back = x.run_back()
+    else:
+        diff_back = openAsImage(fname_back) 
+    model = diff_back
     observations = d["observations"]
-    #plt.imshow(observations)
-    #plt.show()
 
     w = d["w"]
 
@@ -420,7 +420,10 @@ def get_original_points(xml_file, w):
             ra.append(ra0)
         if (i.find('<parameter free="0" max="90" min="-90" name="DEC"') >= 0.0):
             dec_coord = i[i.find("value")+7:]
-            dec0 = float(dec_coord[:dec_coord.find('.')+3]) 
+            try:
+                dec0 = float(dec_coord[:dec_coord.find('.')+3]) 
+            except:
+                dec0 = float(dec_coord[:dec_coord.find('.')+2]) 
             dec.append(dec0)
     #ra, dec = w.all_pix2world([50, 100], [0, 50], 1)
     try:  
@@ -475,6 +478,42 @@ def extract_names(string_points, string_back, a, b):
     #observations = (makeNoisy(obs))
     return d
 
+def extract_names_test(string, original=True):
+    option_position = string.find("_model")
+    string_points = string
+    points_option_position = option_position
+    d = {}
+    d['test'] = True
+    d.update({"fname_points" : string_points[:points_option_position] + "_model_map.fits"})
+    d.update({"fname_back" : string[:option_position] + "_model_map.fits"})
+    d.update({"fname_xml" : string_points[:option_position] + "_test_src_model_const.xml"})    
+    d.update({"final_fits_folder" : string[:string.rfind("/")+1]})
+    d.update({"sky_number" : string[string.rfind("/")+1:][:string[string.rfind("/")+1:].find("_")]})
+    d.update({"sky_number_points" : string_points[string_points.rfind("/")+1:][:string_points[string_points.rfind("/")+1:].find("_")]})
+    d.update({"final_fits" : d["final_fits_folder"] + d["sky_number"] + ".fits"})
+    d.update({"center" : get_center(string)})
+    if original:
+        d["original"] = openAsImage(string[:-6])
+    else:
+        d["original"] = None
+    d.update({"observations": openAsImage(string)})
+    d['sources'] = []
+    d['koefs'] = []
+    d['indexes'] = []
+    d["chosen_fits"] = []
+    hdulist = fits.open(d["fname_points"])
+    d["w"] = wcs.WCS(hdulist[0].header, hdulist)
+    d["fin_fits"] = np.zeros(d["observations"].shape)
+    d["src_points"] =  string_points[:points_option_position] + "_src_model_const.xml"
+    x, y, koefs = get_original_points(d["src_points"], d["w"])
+    d["original_coords"] = [[y[i], x[i]] for i in range(len(x))]
+    d["original_brightness"] = koefs
+    d["file_to_write"] =  "test_result_" + d["sky_number_points"]
+    d["f"] = "likelihood**2"
+    d["int_cr"] = 4
+    #x, y, koefs = 
+    #observations = (makeNoisy(obs))
+    return d
 
 files = (os.listdir("/media/mariia/Maxtor/database5/"))
 
@@ -489,9 +528,19 @@ for i in files:
 #f = open("test2.fits", "w")
 #f.write(point_model)
 #f.close()
+def test(fname_folder, ending):
+    for i in os.listdir(fname_folder):
+        if i[-len(ending):]==ending and i.find("real") == -1:
+            d = extract_names_test(fname_folder+i)
+            run_prog(d, True)
 
+test(fname_folder="/media/mariia/Maxtor/database2/", ending="_model_map.fits.noisy")
+#string = "/media/mariia/Maxtor/database2/sky4_coord_ra43.8245564807_dec77.6699953654_model_map.fits.noisy"
+# = extract_names_test(string)
+#run_prog(d, True)
+#print(d)
 
-for i in range(50):
+"""for i in range(50):
     a, b = generate_linear_koefs()
     string_points = random.choice(points_models)
     string_back =random.choice(back_models)
