@@ -91,7 +91,7 @@ class model:
         '''
         This function should provide predictions of labels on (test) data.
 	In out case X is a dictionary of two fields: Fermi Image and its WCS object.
-
+90
         Make sure that the predicted values are in the correct format for the scoring
         metric. For example, binary classification problems often expect predictions
         in the form of a discriminant value (if the area under the ROC curve it the metric)
@@ -102,6 +102,7 @@ class model:
         '''
         y = []
         for i in range(len(X)):
+            print(str(i) + '/' + str(len(X)))
             observations = X[i]
   
             d = {}
@@ -129,7 +130,7 @@ class model:
             d["koefs"].append(koef*0.1)
             d["fin_fits"] = koef *diff_back
             d["indexes"] = []
-            int_cr =4
+            int_cr =10
             new_likelihood = 0
             likelihood0 = np.inf + 5
             star = 0     
@@ -137,9 +138,11 @@ class model:
             params_k = [1.0] 
             values = []
             iterations = 100
-            print(os.listdir("program"))
             test1 = np.load(self.shared + "/test1.npy")
             while ((-new_likelihood + likelihood0 > int_cr  or likelihood0 == 0) and star<iterations): 
+                if star > 10:
+                    break
+                
                 
                 star += 1
                 index = findBrightest(observations-d["fin_fits"])
@@ -166,7 +169,11 @@ class model:
                 d["koefs"] = results_o.x
                 new_likelihood = results_o.fun
                 d["fin_fits"] = np.sum([d["chosen_fits"][i]*d["koefs"][i] for i in range(len(d["chosen_fits"]))], axis=0)
-                #print("-------------------")     
+                
+                #print("-------------------")
+            print(star)     
+            #plt.imshow(d["fin_fits"]) 
+            #plt.show()
         return [d['indexes'] for _ in range(len(X))]
 
     def save(self, path="./"):
