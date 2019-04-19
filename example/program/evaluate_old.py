@@ -3,10 +3,10 @@ import sys, os, os.path
 import warnings
 import numpy as np
 import pickle
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
+from astropy.io import fits
 from sklearn.neighbors import BallTree
 warnings.filterwarnings('ignore')
-from scipy.spatial import distance as sc_distance
 
 from sys import argv
 
@@ -49,10 +49,9 @@ def int2bytes(i):
 
 def distance(true_coords_vector, coords_vector):
     if len(coords_vector) == 0 and len(true_coords_vector) != 0:
-        res = 0
-        return np.sum(sc_distance.cdist(np.array([[100,100]]), true_coords_vector, 'euclidean')) + 16*len(true_coords_vector)
+        return np.inf
     if len(coords_vector) != 0 and len(true_coords_vector) == 0:
-        return np.sum(sc_distance.cdist(np.array([[100,100]]), coords_vector, 'euclidean')) + 16*len(coords_vector)
+        return np.inf
     if len(coords_vector) == 0 and len(true_coords_vector) == 0:
         return 0
     true_coords = np.vstack({tuple(row) for row in true_coords_vector})#np.unique(true_coords_vector, axis=0)
